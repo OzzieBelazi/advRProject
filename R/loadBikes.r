@@ -10,9 +10,12 @@
 #   Check Package:             'Ctrl + Shift + E'
 #   Test Package:              'Ctrl + Shift + T'
 
-loadBikes <- function(type = c('Jul2017-11Jul2017','28Jun2017-04Jul2017','21Jun2017-27Jun2017')) {
-  require(data.table);require(ggmap);require(dplyr)
+# myfun <- function(type = "response", ...){
+#   match.arg(type, choices = c("response","link","terms"))
+# }
 
+
+loadBikes <- function(type = '28Jun2017-04Jul2017',...) {
 
   getBikeStation <- function(df, id){
     df[df$BikeId==id,c("StartStationName", "EndStationName")]
@@ -29,15 +32,43 @@ loadBikes <- function(type = c('Jul2017-11Jul2017','28Jun2017-04Jul2017','21Jun2
     as.POSIXct(d, format = "%d/%m/%Y %H:%M")
   }
 
+  getFiles <- function(){
+    # not so automatic
+    url = paste0("http://cycling.data.tfl.gov.uk/usage-stats/",csvFiles())
+    df=data.frame(url = url)
+    df$dates = ""
+
+    # extract
+    dateRange <- "[0-9]{2}[a-zA-Z]{3}[0-9]{2}[-][0-9]{2}[a-zA-Z]{3}[0-9]{2}"
+    ranges = str_extract_all(url, dateRange) %>%  unlist %>% data.frame(stringsAsFactors = F)
+    df[grepl(dateRange, df$url),]$dates = ranges$.
+    dateRange <- "[0-9]{2}[a-zA-Z]{3}[0-9]{4}[-][0-9]{2}[a-zA-Z]{3}[0-9]{4}"
+    ranges = str_extract_all(url, dateRange) %>%  unlist %>% data.frame(stringsAsFactors = F)
+    df[grepl(dateRange, df$url),]$dates = ranges$.
+    # df = ranges %>%
+    #   separate(date, c("from", "to"), "-")
+    # ranges %>% arrange(date)
+
+    df
+  }
+
+  df= getFiles()
+
+  dateRange = match.arg(type, several.ok = F, choices = df$dates)
+  require(data.table);require(ggmap);require(dplyr)
+
+
+
+  url = df %>% filter(dates == dateRange) %>% select(url)
+  url = as.character(url$url)
+
+
 
   colSchema = c("integer", "integer", "integer",
                 "Date", "integer", "factor", "Date",
                 "integer", "factor")
 
 
-  arg = match.arg(type)
-
-  url = "http://cycling.data.tfl.gov.uk/usage-stats/55JourneyData Extract26Apr2017-02May2017.csv"
   out = url %>% fread(showProgress = F, data.table = F,
                       colClasses = colSchema) %>% na.omit %>%
     filter(Duration != 0) %>%
@@ -49,13 +80,8 @@ loadBikes <- function(type = c('Jul2017-11Jul2017','28Jun2017-04Jul2017','21Jun2
       x$StartDate = fnFormatDate(x$StartDate)
       x$EndDate = fnFormatDate(x$EndDate)
       x
-    })
+    }) %>% as_tibble
 
-
-  # remove spaces
-  # names(out) = gsub(x = names(out), pattern = ' ', replacement = '')
-  # out$StartDate = fnFormatDate(out$StartDate)
-  # out$EndDate = fnFormatDate(out$EndDate)
 
   "number of rentals per hour"
   out_HourlyRentals = out %>%
@@ -83,20 +109,8 @@ loadBikes <- function(type = c('Jul2017-11Jul2017','28Jun2017-04Jul2017','21Jun2
     summarize(averageTripTime = mean(Duration)/60.0, TotalTrips = n()) %>%
     arrange(TotalTrips)
 
-
-  # > hist(bikes$NumberOfRentals)
-  # > hist(bikes$averageTimeRented)
-  # > hist(bikes$averageTimeRented, breaks = 50)
-  # > hist(bikes$totalTimeRented, breaks = 50)
-  #
-
-  # "get top routes lon/lat"
-  # routes = route(from = c(as.character(out$StartStationName)),
-  #         to = c(as.character(out$EndStationName)), mode = 'bicycling'
-  #         ,structure = "legs")
-
-
-
+  path = "station_locations.Rdata"
+  out_station_locations <- readRDS(path)
 
   # Put it all in a list and return
   out_list = list(data = out,
@@ -104,7 +118,7 @@ loadBikes <- function(type = c('Jul2017-11Jul2017','28Jun2017-04Jul2017','21Jun2
                   stationJourneys = out_StationJourneys,
                   bikeUsage = out_BikeUsage,
                   stationStats = out_StationStats,
-                  type = arg)
+                  station_locations = station_locations)
   class(out_list) = 'biker'
 
   return(out_list)

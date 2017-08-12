@@ -26,6 +26,7 @@
 fit <- function(obj,
                 data_type = c('data', 'hourlyRentals', 'stationJourneys', "bikeUsage"),
                 fit_type = c('gam', 'k.smooth', 'loess', 'smooth.spline')) {
+  require(magrittr)
   # Find out which data set to use
   fit_dat = match.arg(data_type)
   # Find what type of fitting method

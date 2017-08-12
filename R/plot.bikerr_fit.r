@@ -20,7 +20,7 @@
 #' ans4 = fit(ans1, data_type = 'quarterly', fit_type = 'loess')
 #' plot(ans4)
 plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
-
+require(viridis)
   # for loess
   # length(x$data$x)
 
