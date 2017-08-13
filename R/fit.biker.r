@@ -1,32 +1,35 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Build and Reload Package:  'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
-
-
-# # Put it all in a list and return
-# out_list = list(out = out,
-#                 hourlyRentals = out_HourlyRentals,
-#                 stationJourneys = out_StationJourneys,
-#                 bikeUsage = out_BikeUsage,
-#                 type = arg)
-
+#' Plot biker output
+#'
+#' @param obj An object of class \code{biker} from \code{\link{loadBikes}}
+#' @param data_type The type of data to be analysed, either yearly, quarterly, or monthly
+#' @param fit_type The type of model required, either linear regression (\code{lm}), loess, or smoothing spline (\code{smooth.spline})
+#'
+#' @return A list of \code{\link[tibble]{tibble}}s which contains hourly, a, and b values for each time series respectively.
+#' @export
+#' @import tidyr
+#' @import stats
+#' @import mgcv
+#' @import dplyr
+#' @import tidyr
+#' @import stringr
+#' @import magrittr
+#'
+#'
+#' @seealso \code{\link{loadBikes}}, \code{\link{plot.biker_fit}}
+#' @examples
+#' ans1 = loadBikes('26Jul2017-31Jul2017')
+#' ans2 = fit(ans1)
+#' ans3 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline')
+#' ans4 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'loess')
 
 # todo: consider extra param for smoothing
-fit <- function(obj,
+fit.biker <- function(obj,
                 data_type = c('data', 'hourlyRentals', 'stationJourneys', "bikeUsage"),
                 fit_type = c('gam', 'k.smooth', 'loess', 'smooth.spline')) {
-  require(magrittr)
+
+  # Create global variables to avoid annoying CRAN notes
+  NumberOfRentals = x = NULL
+
   # Find out which data set to use
   fit_dat = match.arg(data_type)
   # Find what type of fitting method

@@ -1,65 +1,63 @@
-# load bikes
-#
-# This is a function names loadBikes
-# which returns metrics on bike data from the tfl website
-#
-#
+#' Load in bike usage data from TFL
+#'
+#' @param range A list of weekly date ranges maintained by TFL.
+#' @param ... date ranges
+#' @return A list of \code{\link[tibble]{tibble}}s which contains hourly, a, and b values for each time series respectively.
+#' @export
+#' @import dplyr
+#' @import tidyr
+#' @import stringr
+#' @import magrittr
+#' @importFrom data.table "fread"
+#'
+#'
+#' @seealso \code{\link{loadBikes}}, \code{\link{plot.biker_fit}}
+#' @examples
+#' data = loadBikes(range = '26Jul2017-31Jul2017')
+#' data = loadBikes(range = '19Jul2017-25Jul2017')
+
 # Some useful keyboard shortcuts for package authoring:
 #
 #   Build and Reload Package:  'Ctrl + Shift + B'
 #   Check Package:             'Ctrl + Shift + E'
 #   Test Package:              'Ctrl + Shift + T'
+#
 
-# myfun <- function(type = "response", ...){
-#   match.arg(type, choices = c("response","link","terms"))
-# }
+loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12Jul2017-18Jul2017','05Jul2017-11Jul2017'),...) {
 
-
-loadBikes <- function(type = '28Jun2017-04Jul2017',...) {
+  BikeId = NumberOfRentals = x = station_locations = . = StartStationName = EndStationName = StartDate = Duration = url = dates = TotalTrips = Station = NULL
 
   getBikeStation <- function(df, id){
     df[df$BikeId==id,c("StartStationName", "EndStationName")]
 
   }
 
-  getRoute <- function(df, id, alt = F){
-    cbind(BikeId = id, route(from = c(as.character(df$StartStation.Name)),
-                             to = c(as.character(df$EndStationName)), mode = 'bicycling'
-                             ,structure = "legs", alternatives = alt))
-  }
+  # getRoute <- function(df, id, alt = F){
+  #   cbind(BikeId = id, route(from = c(as.character(df$StartStation.Name)),
+  #                            to = c(as.character(df$EndStationName)), mode = 'bicycling'
+  #                            ,structure = "legs", alternatives = alt))
+  # }
 
   fnFormatDate <- function(d){
     as.POSIXct(d, format = "%d/%m/%Y %H:%M")
   }
 
-  getFiles <- function(){
-    # not so automatic
-    url = paste0("http://cycling.data.tfl.gov.uk/usage-stats/",csvFiles())
-    df=data.frame(url = url)
-    df$dates = ""
-
-    # extract
-    dateRange <- "[0-9]{2}[a-zA-Z]{3}[0-9]{2}[-][0-9]{2}[a-zA-Z]{3}[0-9]{2}"
-    ranges = str_extract_all(url, dateRange) %>%  unlist %>% data.frame(stringsAsFactors = F)
-    df[grepl(dateRange, df$url),]$dates = ranges$.
-    dateRange <- "[0-9]{2}[a-zA-Z]{3}[0-9]{4}[-][0-9]{2}[a-zA-Z]{3}[0-9]{4}"
-    ranges = str_extract_all(url, dateRange) %>%  unlist %>% data.frame(stringsAsFactors = F)
-    df[grepl(dateRange, df$url),]$dates = ranges$.
-    # df = ranges %>%
-    #   separate(date, c("from", "to"), "-")
-    # ranges %>% arrange(date)
-
-    df
-  }
-
-  df= getFiles()
-
-  dateRange = match.arg(type, several.ok = F, choices = df$dates)
-  require(data.table);require(ggmap);require(dplyr)
+  # data("urls")
+  #
+  # # Custom load
+  # load(sysdata.rda)
 
 
+  tryCatch(match.arg(range, choices = urls$dates) , error = function(c) {
+    # c$message <- paste0(c$message, " (in ", range, ")")
+    c$message <- paste0(" Invalid argument (range = '",range,"'). Please run validDates() for valid date ranges.")
 
-  url = df %>% filter(dates == dateRange) %>% select(url)
+    stop(c)
+  })
+
+  date_range = match.arg(range, choices = urls$dates)
+
+  url = urls %>% filter(dates == date_range) %>% select(url)
   url = as.character(url$url)
 
 

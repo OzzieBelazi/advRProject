@@ -1,31 +1,31 @@
 #' Plot climr output
 #'
-#' @param x Output from the \code{\link{fit}} function
+#' @param x Output from the \code{\link{fit.biker}} function
 #' @param time_grid An optional time grid over which to produce fitted values of the model
 #' @param ... Other arguments to plot (not currently implemented)
 #'
 #' @return Nothing: just a nice plot
-#' @seealso \code{\link{load_clim}}, \code{\link{fit}}
+#' @seealso \code{\link{loadBikes}}, \code{\link{fit.biker}}
 #' @export
 #' @import ggplot2
+#' @import ggmap
 #' @importFrom tibble "tibble"
 #' @importFrom viridis "scale_color_viridis"
 #'
 #' @examples
-#' ans1 = load_clim('SH')
+#' ans1 = loadBikes('26Jul2017-31Jul2017')
 #' ans2 = fit(ans1)
 #' plot(ans2)
-#' ans3 = fit(ans1, data_type = 'monthly', fit_type = 'smooth.spline')
+#' ans3 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline')
 #' plot(ans3)
-#' ans4 = fit(ans1, data_type = 'quarterly', fit_type = 'loess')
+#' ans4 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'loess')
 #' plot(ans4)
 plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
-require(viridis)
   # for loess
   # length(x$data$x)
 
   # Create global variables to avoid annoying CRAN notes
-  DJF = Dec = `J-D` = Jan = SON = Year = month = pred = quarter = temp = year = NULL
+  pred = NumberOfRentals = BikeId = NULL
 
   # Create a nice plot from the output of fit.climr
 

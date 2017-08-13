@@ -1,6 +1,4 @@
 
-
-
 csvFiles = function(){
 c("01aJourneyDataExtract10Jan16-23Jan16.csv",
   "01b Journey Data Extract 24Jan16-06Feb16.csv",
