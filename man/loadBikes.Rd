@@ -19,8 +19,7 @@ A list of \code{\link[tibble]{tibble}}s which contains hourly, a, and b values f
 Load in bike usage data from TFL
 }
 \examples{
-data = loadBikes(range = '26Jul2017-31Jul2017')
-data = loadBikes(range = '19Jul2017-25Jul2017')
+ans1 = loadBikes(range = '26Jul2017-31Jul2017')
 }
 \seealso{
 \code{\link{loadBikes}}, \code{\link{fit}}

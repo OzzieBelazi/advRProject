@@ -13,8 +13,7 @@
 #' @seealso \code{\link{loadBikes}}, \code{\link{fit}}
 #'
 #' @examples
-#' data = loadBikes(range = '26Jul2017-31Jul2017')
-#' data = loadBikes(range = '19Jul2017-25Jul2017')
+#' ans1 = loadBikes(range = '26Jul2017-31Jul2017')
 
 loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12Jul2017-18Jul2017','05Jul2017-11Jul2017'),...) {
 
