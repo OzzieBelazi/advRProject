@@ -1,3 +1,4 @@
+require(dplyr);require(stringr)
 validDates <- function(){
   # not so automatic
   url = paste0("http://cycling.data.tfl.gov.uk/usage-stats/",csvFiles())
@@ -20,4 +21,15 @@ validDates <- function(){
 
 urls = validDates()
 # devtools::use_data(urls, internal = T, overwrite = T)
-save(urls,  file  = "../../R/sysdata.rda")
+save(station_locations, urls,  file  = "../R/sysdata.rda")
+# checking file info
+file.info("../R/sysdata.rda")
+file.size("../R/sysdata.rda")
+# check rda to verify the best compression
+tools::checkRdaFiles("../R/sysdata.rda")
+# resave rda with a better compression if available
+tools::resaveRdaFiles("../R/sysdata.rda")
+tools::checkRdaFiles("../R/sysdata.rda")
+
+
+

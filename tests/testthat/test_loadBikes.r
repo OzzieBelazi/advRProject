@@ -1,15 +1,10 @@
 library(bikesR)
 
-context("checks that boadBikes loads ok")
+context("checks that loadBikes loads ok")
 
 test_that("loadBikes produces valid data", {
-  expect_output(str(loadBikes("20Sep15-03Oct15")), 'List of 4')
-  expect_error(loadBikes(type = "aaaa"))
-  # expect_is(load_clim('NH'), 'climr')
-  # Here's one that fails
-  #expect_output(str(load_clim('SH')), 'List of 7')
+  expect_output(str(loadBikes("20Sep15-03Oct15")), 'List of 7')
+  expect_error(loadBikes(type = "invalid date"))
+  expect_is(loadBikes("20Sep15-03Oct15"), 'biker')
 })
-#
-#
-# loadBikes(type = "aaaa")
-# loadBikes("20Sep15-03Oct15")
+

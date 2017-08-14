@@ -1,31 +1,36 @@
-#' Plot biker output
+#' Fit biker output
 #'
 #' @param obj An object of class \code{biker} from \code{\link{loadBikes}}
 #' @param data_type The type of data to be analysed, either yearly, quarterly, or monthly
-#' @param fit_type The type of model required, either linear regression (\code{lm}), loess, or smoothing spline (\code{smooth.spline})
+#' @param fit_type The type of model required, either gam (\code{gam}), loess (\code{loess}), or smoothing spline (\code{smooth.spline})
 #'
 #' @return A list of \code{\link[tibble]{tibble}}s which contains hourly, a, and b values for each time series respectively.
 #' @export
-#' @import tidyr
-#' @import stats
+#' @importFrom  stats "ksmooth" "smooth.spline" "loess" "lm" "predict"
 #' @import mgcv
 #' @import dplyr
-#' @import tidyr
 #' @import stringr
-#' @import magrittr
+#' @importFrom forecast "auto.arima"
+#' @importFrom magrittr "extract2" "%$%"
 #'
 #'
-#' @seealso \code{\link{loadBikes}}, \code{\link{plot.biker_fit}}
+#' @seealso \code{\link{loadBikes}}, \code{\link{plot}}
+#' @export
+#'
 #' @examples
 #' ans1 = loadBikes('26Jul2017-31Jul2017')
-#' ans2 = fit(ans1)
-#' ans3 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline')
-#' ans4 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'loess')
-
+#' ans2 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline')
+#' ans3 = fit(ans1, data_type = 'dailyRentals', fit_type = 'loess')
+fit = function(obj,
+               data_type = c('hourlyRentals','dailyRentals' , 'stationJourneys', 'bikeUsage'),
+               fit_type = c('arima', 'k.smooth', 'loess', 'smooth.spline')) {
+  UseMethod('fit')
+}
 # todo: consider extra param for smoothing
+#' @export
 fit.biker <- function(obj,
-                data_type = c('data', 'hourlyRentals', 'stationJourneys', "bikeUsage"),
-                fit_type = c('gam', 'k.smooth', 'loess', 'smooth.spline')) {
+                data_type = c('data', 'hourlyRentals', 'dailyRentals', 'stationJourneys', "bikeUsage"),
+                fit_type = c('arima', 'k.smooth', 'loess', 'smooth.spline')) {
 
   # Create global variables to avoid annoying CRAN notes
   NumberOfRentals = x = NULL
@@ -39,8 +44,9 @@ fit.biker <- function(obj,
   dat_choose = switch(fit_dat,
                       out = 1,
                       hourlyRentals = 2,
-                      stationJourneys = 3,
-                      bikeUsage = 4)
+                      dailyRentals = 3,
+                      stationJourneys = 4,
+                      bikeUsage = 5)
 
   # Get the data set to use
   curr_dat = obj %>% extract2(dat_choose)
@@ -54,8 +60,8 @@ fit.biker <- function(obj,
     mod = curr_dat %$% smooth.spline(x, NumberOfRentals)
   } else if(fit_arg == 'k.smooth') {
     mod = curr_dat %$% ksmooth(as.POSIXct(x), NumberOfRentals, kernel = "normal")
-  } else if(fit_arg == 'gam') {
-    mod = curr_dat %$% smooth.spline(x, NumberOfRentals)
+  } else if(fit_arg == 'arima') {
+    mod = auto.arima(curr_dat$NumberOfRentals)
   }
   print(mod)
 
@@ -67,7 +73,5 @@ fit.biker <- function(obj,
   class(out) = 'biker_fit'
 
   invisible(out)
-
-
 
 }

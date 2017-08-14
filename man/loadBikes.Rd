@@ -9,6 +9,8 @@ loadBikes(range = c("26Jul2017-31Jul2017", "19Jul2017-25Jul2017",
 }
 \arguments{
 \item{range}{A list of weekly date ranges maintained by TFL.}
+
+\item{...}{date ranges corresponding to files on the tfl website}
 }
 \value{
 A list of \code{\link[tibble]{tibble}}s which contains hourly, a, and b values for each time series respectively.
@@ -21,5 +23,5 @@ data = loadBikes(range = '26Jul2017-31Jul2017')
 data = loadBikes(range = '19Jul2017-25Jul2017')
 }
 \seealso{
-\code{\link{loadBikes}}, \code{\link{plot.biker_fit}}
+\code{\link{loadBikes}}, \code{\link{fit}}
 }

@@ -233,7 +233,7 @@ LondonMap
 station_out = dat$stationJourneys %>% group_by(StartStationName) %>% rename(Station= StartStationName) %>%
   summarise(av = mean(averageTripTime)) %>% arrange(desc(av)) %>% inner_join(., station_locations, by=c("Station"))
 
-# map <- LondonMap #get_map(location = 'London', zoom = 12)
+map <- get_map(location = 'London', zoom = 12)
 # ggmap(map) +
 LondonMap +
   geom_point(aes(x = lon, y = lat, size = av), data = station_out, alpha = .5) +
@@ -393,6 +393,100 @@ LondonMap +
 # str(dat$hourlyRentals)
 # mod = dat$hourlyRentals %$% ksmooth(as.POSIXct(RentalDate), NumberOfRentals)
 
+getBikeStation <- function(df, id){
+  df[df$BikeId==id,c("StartStationName", "EndStationName")]
+
+}
+
+getBikeStation <- function(df, id){
+  df[,c("BikeId", "StartStationName", "EndStationName")]
+
+}
+
+getRoute <- function(df, id){
+  cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
+   to = c(as.character(df$EndStationName)), mode = 'bicycling'
+   ,structure = "legs"))
+}
+
+"single bike"
+sample = getRoute(ans1$data, id = 1)
+"using getRoute"
+LondonMap <- ggmap(map,
+                   base_layer = ggplot(aes(x = endLon, y = endLat),
+                                       data = sample))
+LondonMap + geom_leg(data = sample,
+         aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
+         alpha = 3/4, size = 2  ) +
+labs(x = 'Longitude', y = 'Latitude')
+
+"works......................................................."
+"top number of rentals per bike"
+sample = ans1$data %>% arrange(desc(Duration)) %>% head(20)
+ids = ans1$data %>%
+  group_by(BikeId) %>%
+  summarise(n = n()) %>% arrange(desc(n)) %>% select(BikeId) %>% head(20)
+
+sample2 = as.data.frame()
+list.all = list()
+for(id in 1:nrow(ids)){
+  print(id)
+  list.all[[id]] = getRoute(sample[id,], id = ids[id,])
+}
+sample2 = bind_rows(list.all)
+
+"using getRoute"
+LondonMap <- ggmap(map,
+                   base_layer = ggplot(aes(x = endLon, y = endLat),
+                                       data = sample2))
+LondonMap + geom_leg(data = sample2,
+                     aes(x = startLon, y = startLat, xend = endLon, yend = endLat, color = BikeId),
+                     alpha = 3/4, size = 2  ) +
+  labs(x = 'Longitude', y = 'Latitude')+
+  scale_color_gradientn(colours = rainbow(10), breaks = seq(25, 200, by = 10))
+
+
+"not using that"
+sample = getBikeStation(ans1$data, 6216)
+sample$StartStationName = as.character(sample$StartStationName)
+sample2 = inner_join(sample, station_locations, by = c("StartStationName"="Station")) %>%
+  select(StartStationName, lon, lat) %>% rename(Station = StartStationName)
+
+map <- get_map(location = 'London', zoom = 12)
+LondonMap <- ggmap(map,
+                   base_layer = ggplot(aes(x = lon, y = lat),
+                                       data = sample2))
+
+
+LondonMap +   geom_path(data = sample2, lineend = "round")
+
+
+ggmap(bikemap1) +
+  geom_path(data = bike, aes(color = elevation), size = 3, lineend = "round") +
+  scale_color_gradientn(colours = rainbow(7), breaks = seq(25, 200, by = 25))
+
+"all bikes in one go"
+getBikeStation <- function(df, id){
+  df[,c("BikeId", "StartStationName", "EndStationName")]
+
+}
+sample = getBikeStation(ans1$data, 6216)
+sample$StartStationName = as.character(sample$StartStationName)
+sample2 = inner_join(sample, station_locations, by = c("StartStationName"="Station")) %>%
+  select(BikeId, StartStationName, lon, lat) %>% rename(Station = StartStationName)
+
+map <- get_map(location = 'London', zoom = 12)
+LondonMap <- ggmap(map,
+                   base_layer = ggplot(aes(x = lon, y = lat),
+                                       data = sample2))+
+  geom_path(data = bike, aes(color = elevation), size = 3, lineend = "round")
+
+LondonMap +   geom_path(data = sample2, aes(color = BikeId), lineend = "round")
+
+
+ggmap(bikemap1) +
+  geom_path(data = bike, aes(color = elevation), size = 3, lineend = "round") +
+  scale_color_gradientn(colours = rainbow(7), breaks = seq(25, 200, by = 25))
 
 
 
