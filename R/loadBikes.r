@@ -99,8 +99,7 @@ loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12J
                   dailyRentals = out_DailyRentals,
                   stationJourneys = out_StationJourneys,
                   bikeUsage = out_BikeUsage,
-                  stationStats = out_StationStats,
-                  station_locations = station_locations)
+                  stationStats = out_StationStats)
   class(out_list) = 'biker'
 
   return(out_list)
