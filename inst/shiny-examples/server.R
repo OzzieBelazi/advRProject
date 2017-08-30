@@ -44,6 +44,13 @@ shinyServer(function(input, output) {
                   min = 0.0,
                   max = 1.0,
                   value = NULL)
+    }else if (input$model == "arima"){
+      # Sidebar with a slider input for the number of bins
+      sliderInput("h",
+                  "forecast:",
+                  min = 1,
+                  max = 100,
+                  value = 30)
     }
 
   )
@@ -72,13 +79,21 @@ shinyServer(function(input, output) {
             else
               fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
 
-          } else{
-            print("aaa")
+          }else{
             fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
 
           }
-          print("printing and plotting")
           plot(fitted)
+
+          if(input$model == "arima"){
+            if(input$h != 0)
+              plot(fitted, h = input$h)
+            else
+              plot(fitted)
+
+          }else
+            plot(fitted)
+
         }
 
       } else if(input$rd == "Station Stats" ){

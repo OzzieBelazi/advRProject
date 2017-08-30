@@ -109,11 +109,6 @@ map.biker = function(obj,
     }
     df$StartStationName = station
 
-
-    # # Lets trace the journey of a single bike over the course of the week
-    # sample = getRoute(ans1$data, id = 1)
-    # get potential routes between each station the bike has visited
-    # map <- get_map(location = 'London', zoom = 14)
     ggmap(londonMap, base_layer = ggplot(aes(x = endLon, y = endLat),data = df)) +
       geom_point(data = df, aes(x = startLon, y = startLat, colour = StartStationName)) +
       geom_leg(data = df,

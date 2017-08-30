@@ -36,6 +36,13 @@ plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
   # Get the data set out
   df = x$data
 
+  # store all optional arguments in a list
+  z <- list(...)
+  if(!is.null(z$h))
+     h=z$h
+  else
+    h=30
+
   predict(x$model, newdata = tibble(time_grid))
   predict(x$model, newdata = tibble(time_grid))
 
@@ -45,11 +52,9 @@ plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
   } else if(x$fit_type == 'smooth.spline') {
     tibble(time_grid, pred = predict(x$model, tibble(as.numeric(time_grid)))$y[,1])
   } else if(x$fit_type == 'arima') {
-    forecast(x$model, h = 20)
+    forecast(x$model, h = h)
   }
 
-  #todo: @ source
-  # df$x = as.POSIXct(df$x)
   if(x$fit_type != 'arima'){
   # Finally create the plot
   ggplot(df, aes(y=NumberOfRentals, x=x)) +
@@ -65,6 +70,6 @@ plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
     autoplot(fits) +
     theme_bw() +
     xlab('Hourly') +
-    ylab('Number of bike rentals') + geom_forecast(h=36)
+    ylab('Number of bike rentals') + geom_forecast(h=h)
 
 }

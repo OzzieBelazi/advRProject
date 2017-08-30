@@ -6,10 +6,9 @@ shinyUI(fluidPage(
     sidebarPanel(
       radioButtons("rd",
                    label="Select analysis for dataset",
-                   choices=list("Modeling","Station Stats","Fun"),
+                   choices=list("Modeling","Station Stats"),
                    selected="Modeling"),
       uiOutput("Box1"), # Stations
-      uiOutput("Box2"), #
       uiOutput("Box3")  # Model Types
     ),
 
