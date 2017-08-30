@@ -15,7 +15,7 @@ shinyServer(function(input, output) {
     if(is.null(input$rd) ){
       return()
     } else if (input$rd == "Modeling"){
-    selectInput("model","select a model",c(unique(Models$model),"pick one"),"pick one")
+      selectInput("model","select a model",c(unique(Models$model),"pick one"),"pick one")
     }else if (input$rd == "Station Stats"){
       # currently selective, good to have an additional all... or put somewhere else
       selectInput("station","select a station",c(unique(as.character(data$stationStats$Station)),"pick one"),"pick one")
@@ -100,13 +100,14 @@ shinyServer(function(input, output) {
 
         if(!is.null(input$station) & !input$station == "pick one"){
 
-          map.biker(obj = data, data_type = 'stationJourneys', station = input$station)
 
           # Generate a summary of the dataset
           output$table <- renderTable({
             data$stationStats %>% filter(Station == input$station) %>%
               rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
           })
+
+          map.biker(obj = data, data_type = 'stationJourneys', station = input$station)
 
         }
 
@@ -115,7 +116,7 @@ shinyServer(function(input, output) {
 
     }
 
-})
+  })
 
 
 })
