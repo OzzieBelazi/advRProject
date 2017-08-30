@@ -14,7 +14,7 @@ Here is an example of using `biker`:
 
 ```{r, echo=FALSE, results='asis'}
 library(bikesR)
-ans1 = loadBikes(range = '26Jul2017-31Jul2017')
+ans1 = loadBikes(range = '05Jul2017-11Jul2017')
 knitr::kable(head(ans1$hourlyRentals, 10))
 ```
 
