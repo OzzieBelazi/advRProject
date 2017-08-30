@@ -90,10 +90,12 @@ map.biker = function(obj,
       print("For a full list of stations please type 'View(station_locations)'")
       station =  "Abbey Orchard Street, Westminster"
     }
+    else
+      station = z$station
 
 
     curr_dat = curr_dat %>%
-      filter(StartStationName == z$station & as.character(StartStationName) != as.character(EndStationName)) %>%
+      filter(StartStationName == station & as.character(StartStationName) != as.character(EndStationName)) %>%
       arrange(desc(TotalTrips) ) %>% head(20)
 
     aList = list()
@@ -111,7 +113,7 @@ map.biker = function(obj,
       if(is.data.frame(aList[[i]]))
         df = bind_rows(df, aList[[i]])
     }
-    df$StartStationName = z$station
+    df$StartStationName = station
 
 
     # # Lets trace the journey of a single bike over the course of the week
@@ -119,11 +121,12 @@ map.biker = function(obj,
     # get potential routes between each station the bike has visited
     # map <- get_map(location = 'London', zoom = 14)
     ggmap(londonMap, base_layer = ggplot(aes(x = endLon, y = endLat),data = df)) +
+      geom_point(data = df, aes(x = startLon, y = startLat, colour = StartStationName)) +
       geom_leg(data = df,
                aes(x = startLon, y = startLat, xend = endLon, yend = endLat, colour = EndStationName),
                alpha = 3/4, size = 2  ) +
       labs(x = 'Longitude', y = 'Latitude') +
-      ggtitle("Journey of a bike over the course of a week")
+      ggtitle(paste0("Bike Routes from ",station))
 
 
   }

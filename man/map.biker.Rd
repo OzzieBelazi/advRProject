@@ -5,7 +5,7 @@
 \title{Map biker data}
 \usage{
 map.biker(obj, data_type = c("stationJourneys", "stationStats"),
-  plot_type = c("usage", "rentals"))
+  plot_type = c("usage", "rentals"), ...)
 }
 \arguments{
 \item{obj}{Output from the \code{\link{loadBikes}} function}

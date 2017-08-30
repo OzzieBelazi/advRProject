@@ -2,7 +2,6 @@ library(shiny)
 shinyUI(fluidPage(
   titlePanel("bikeR"),
 
-
   sidebarLayout(
     sidebarPanel(
       radioButtons("rd",
@@ -10,8 +9,8 @@ shinyUI(fluidPage(
                    choices=list("Modeling","Station Stats","Fun"),
                    selected="Modeling"),
       uiOutput("Box1"), # Stations
-      uiOutput("Box2"), #, # Model Types
-      uiOutput("Box3")  # Something Else
+      uiOutput("Box2"), #
+      uiOutput("Box3")  # Model Types
     ),
 
     # Show a plot of the generated distribution
@@ -19,9 +18,6 @@ shinyUI(fluidPage(
       plotOutput("distPlot"),
       tableOutput('table')
     )
-
-
-    # )
 
   )
 ))

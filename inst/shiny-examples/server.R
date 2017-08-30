@@ -6,11 +6,6 @@ Models = data.frame(
   stringsAsFactors = FALSE
 )
 
-StatType = data.frame(
-  type = c("usage", "rental"),
-  stringsAsFactors = FALSE
-)
-
 data  = loadBikes(range = '05Jul2017-11Jul2017')
 
 shinyServer(function(input, output) {
@@ -26,19 +21,11 @@ shinyServer(function(input, output) {
       selectInput("station","select a station",c(unique(as.character(data$stationStats$Station)),"pick one"),"pick one")
     } else {
       # picka bike id to trace
-      selectInput("bikeid","select a Bike",c(unique(input$rd),"pick one"),"pick one")
+      selectInput("bikeid","select a Bike",c(unique(data$bikeUsage$BikeId),"pick one"),"pick one")
     }
 
   )
 
-# view usage / rental
-# output$Box2 = renderUI(
-#   if (is.null(input$station) || input$station == "pick one"){return()
-#   }else selectInput("usage",
-#                     "Select a hourly",
-#                     c(unique(biz$Stock[which(biz$Sector == input$sector)]),"pick one"),
-#                     "pick one")
-# )
 
   output$Box3 = renderUI(
     if (is.null(input$model) || input$model == "pick one"){
@@ -65,66 +52,55 @@ shinyServer(function(input, output) {
   # plot selected
   output$distPlot <- renderPlot({
 
-    if( input$rd == "Modeling" & !is.null(input$model) & !input$model == "pick one"){
+    if(!is.null(input$rd )){
+
+      # modeling
+      if(input$rd == "Modeling" & !is.null(input$model)){
 
 
-      fitted = if(input$model == "loess" & input$span != 0 ){
+        if(input$model != "pick one"){
 
-        fit(data, data_type = 'hourlyRentals', fit_type = input$model, span = input$span)
+          if(input$model == "loess"  ){
+            if(input$span != 0)
+              fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model, span = input$span)
+            else
+              fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
 
-      }else if(input$model == "smooth.spline" & input$spar != 0){
+          }else if(input$model == "smooth.spline"){
+            if(input$spar != 0)
+              fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model, spar = input$spar)
+            else
+              fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
 
-        fit(data, data_type = 'hourlyRentals', fit_type = input$model, spar = input$spar)
+          } else{
+            print("aaa")
+            fitted = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
 
-      } else{
+          }
+          print("printing and plotting")
+          plot(fitted)
+        }
 
-        fit(data, data_type = 'hourlyRentals', fit_type = input$model)
+      } else if(input$rd == "Station Stats" ){
 
-        # output$table <- renderTable({
-        #   data$stationStats %>% filter(Station == input$station) %>%
-        #     rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
-        # })
+        if(!is.null(input$station) & !input$station == "pick one"){
+
+          map.biker(obj = data, data_type = 'stationJourneys', station = input$station)
+
+          # Generate a summary of the dataset
+          output$table <- renderTable({
+            data$stationStats %>% filter(Station == input$station) %>%
+              rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
+          })
+
+        }
 
       }
-      print(summary(fitted$model))
-      plot(fitted)
-
-
-
-
-    } else if(input$rd == "Station Stats" & !is.null(input$station) & !input$station == "pick one" ){
-
-      print(input$station)
-      # map.biker(obj = data, data_type = 'stationStats', 'usage')
-
-      # Generate a summary of the dataset
-      output$table <- renderTable({
-        data$stationStats %>% filter(Station == input$station) %>%
-          rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
-      })
-
-
-
-    } else if(input$rd == "Fun"){
-
-
-
-      map.biker(obj = data, data_type = 'stationStats', 'usage')
 
 
     }
 
 })
 
-
-  # subdata1 = reactive(biz[which(biz$Sector == input$sector),])
-  # subdata2 = reactive(subdata1()[which(subdata1()$Stock == input$stock),])
-  #
-  # output$view = renderTable({
-  #   if(is.null(input$sector) || is.null(input$stock)){return()
-  #   } else if (input$sector == "pick one" || input$stock == "pick one"){return()
-  #
-  #   } else return(subdata2())
-  # })
 
 })

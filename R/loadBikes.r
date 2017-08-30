@@ -45,9 +45,8 @@ loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12J
                 "Date", "integer", "factor", "Date",
                 "integer", "factor")
 
-  print(url)
   # if selected load precache file
-  if(range %in% c('05Jul2017-11Jul2017', '21Jun2017-27Jun2017')){
+  if(range %in% c('05Jul2017-11Jul2017')){
     url = paste0("65JourneyDataExtract", range,".csv")
     url = system.file("extdata", url,  package='bikesR')
 }

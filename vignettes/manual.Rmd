@@ -49,41 +49,34 @@ map.biker(obj = ans1, data_type = 'stationStats', 'rentals')
 ```
 
 Included in the package, is a data set called station_locations, which contains all current bike stations and longitude and latitude coordinates.
-```{r}
 
-# knitr::kable(head(ans1$station_locations, 10))
-```
+<!-- ```{r} -->
+
+<!-- # knitr::kable(head(ans1$station_locations, 10)) -->
+<!-- ``` -->
 
 This can be used in conjunction with external spatial packages such as ggmap to assist in ad-hoc data analysis of the biker datasets.
 
 ```{r}
-# require(ggmap)
-# # wrapper function for ggmap's route which returns the geocoordinates of the route created by the route function.
-# getRoute <- function(df, id){
-#   cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
-#    to = c(as.character(df$EndStationName)), mode = 'bicycling'
-#    ,structure = "legs"))
-# }
-# 
-# # Lets trace the journey of a single bike over the course of the week
-# sample = getRoute(ans1$data, id = 1)
-# # get potential routes between each station the bike has visited
-# map <- get_map(location = 'London', zoom = 14)
-# ggmap(map, base_layer = ggplot(aes(x = endLon, y = endLat),data = sample)) + 
-#   geom_leg(data = sample,
-#          aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
-#          alpha = 3/4, size = 2  ) + 
-#   labs(x = 'Longitude', y = 'Latitude') + 
-#   ggtitle("Journey of a bike over the course of a week")
+require(ggmap)
+# wrapper function for ggmap's route which returns the geocoordinates of the route created by the route function.
+getRoute <- function(df, id){
+  cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
+   to = c(as.character(df$EndStationName)), mode = 'bicycling'
+   ,structure = "legs"))
+}
+
+# Lets trace the journey of a single bike over the course of the week
+sample = getRoute(ans1$data, id = 1)
+# get potential routes between each station the bike has visited
+map <- get_map(location = 'London', zoom = 14)
+ggmap(map, base_layer = ggplot(aes(x = endLon, y = endLat),data = sample)) +
+  geom_leg(data = sample,
+         aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
+         alpha = 3/4, size = 5  ) +
+  labs(x = 'Longitude', y = 'Latitude') +
+  ggtitle("Journey of a bike over the course of a week")
 ```
 
+<!-- devtools::install() -->
 
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(ans1$hourlyRentals, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))

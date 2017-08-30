@@ -5,7 +5,7 @@
 \title{Fit biker output}
 \usage{
 fit(obj, data_type = c("hourlyRentals", "dailyRentals", "stationJourneys",
-  "bikeUsage"), fit_type = c("arima", "k.smooth", "loess", "smooth.spline"))
+  "bikeUsage"), fit_type = c("arima", "loess", "smooth.spline"), ...)
 }
 \arguments{
 \item{obj}{An object of class \code{biker} from \code{\link{loadBikes}}}
