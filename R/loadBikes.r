@@ -13,7 +13,7 @@
 #' @seealso \code{\link{loadBikes}}, \code{\link{fit}}
 #'
 #' @examples
-#' ans1 = loadBikes(range = '26Jul2017-31Jul2017')
+#' ans1 = loadBikes(range = '05Jul2017-11Jul2017')
 
 loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12Jul2017-18Jul2017','05Jul2017-11Jul2017'),...) {
 
@@ -45,8 +45,14 @@ loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12J
                 "Date", "integer", "factor", "Date",
                 "integer", "factor")
 
+  print(url)
+  # if selected load precache file
+  if(range %in% c('05Jul2017-11Jul2017', '21Jun2017-27Jun2017')){
+    url = paste0("65JourneyDataExtract", range,".csv")
+    url = system.file("extdata", url,  package='bikesR')
+}
 
-  out = fread(url, showProgress = F, data.table = F,
+    out = fread(url, showProgress = F, data.table = F,
                       colClasses = colSchema) %>% na.omit %>%
     dplyr::filter(Duration != 0) %>%
     rename_all(
@@ -99,7 +105,8 @@ loadBikes <- function(range = c('26Jul2017-31Jul2017','19Jul2017-25Jul2017','12J
                   dailyRentals = out_DailyRentals,
                   stationJourneys = out_StationJourneys,
                   bikeUsage = out_BikeUsage,
-                  stationStats = out_StationStats)
+                  stationStats = out_StationStats
+                 )
   class(out_list) = 'biker'
 
   return(out_list)

@@ -1,32 +1,29 @@
 library(shiny)
-biz = data.frame(
-  Sector = c("a", "a", "a", "a", "b", "b", "b", "b", "b", "b", "b", "b"),
-  Stock = c("Infy","TCS","Wipro","TechM","SBIN","ICICI","HDFC", "Axis", "IDBI", "PSB","BOI","Bob"),
-  stringsAsFactors = FALSE
-)
+library(dplyr)
 
 Models = data.frame(
-  model = c("arima", "k.smooth", "loess", "smooth.spline"),
+  model = c("arima", "loess", "smooth.spline"),
   stringsAsFactors = FALSE
 )
 
 StatType = data.frame(
-  type = c("Usage", "Rental"),
+  type = c("usage", "rental"),
   stringsAsFactors = FALSE
 )
 
+data  = loadBikes(range = '05Jul2017-11Jul2017')
 
 shinyServer(function(input, output) {
 
   # output box 1 displays top level selections for plots
   output$Box1 = renderUI(
-    if(is.null(input$rd) || is.null(input$rd)){
+    if(is.null(input$rd) ){
       return()
     } else if (input$rd == "Modeling"){
     selectInput("model","select a model",c(unique(Models$model),"pick one"),"pick one")
-    }else if (input$rd == "Exploratory Analysis"){
+    }else if (input$rd == "Station Stats"){
       # currently selective, good to have an additional all... or put somewhere else
-      selectInput("station","select a station",c(unique(data$stationStats$Station),"pick one"),"pick one")
+      selectInput("station","select a station",c(unique(as.character(data$stationStats$Station)),"pick one"),"pick one")
     } else {
       # picka bike id to trace
       selectInput("bikeid","select a Bike",c(unique(input$rd),"pick one"),"pick one")
@@ -34,68 +31,90 @@ shinyServer(function(input, output) {
 
   )
 
-# select a station
-  # output$Box1 = renderUI(
-  #
-  #     selectInput("station","select a station",c(unique(data$stationStats$Station),"pick one"),"pick one")
-  #
-  #   )
-
 # view usage / rental
-  output$Box2 = renderUI(
-    if (is.null(input$station) || input$station == "pick one"){return()
-    }else selectInput("usage",
-                      "Select a hourly",
-                      c(unique(biz$Stock[which(biz$Sector == input$sector)]),"pick one"),
-                      "pick one")
-  )
+# output$Box2 = renderUI(
+#   if (is.null(input$station) || input$station == "pick one"){return()
+#   }else selectInput("usage",
+#                     "Select a hourly",
+#                     c(unique(biz$Stock[which(biz$Sector == input$sector)]),"pick one"),
+#                     "pick one")
+# )
 
-  # output$Box2 = renderUI(
-  #   if (is.null(input$station) || input$station == "pick one"){return()
-  #   }else selectInput("usage",
-  #                     "Select a hourly",
-  #                     c(unique(biz$Stock[which(biz$Sector == input$sector)]),"pick one"),
-  #                     "pick one")
-  # )
+  output$Box3 = renderUI(
+    if (is.null(input$model) || input$model == "pick one"){
+      return()
+    }else if (input$model == "loess"){
+      # Sidebar with a slider input for the number of bins
+      sliderInput("span",
+                  "Span:",
+                  min = 0.0,
+                  max = 1.0,
+                  value = NULL)
+    }else if (input$model == "smooth.spline"){
+      # Sidebar with a slider input for the number of bins
+      sliderInput("spar",
+                  "Smoothing Parameter:",
+                  min = 0.0,
+                  max = 1.0,
+                  value = NULL)
+    }
+
+  )
 
 
   # plot selected
   output$distPlot <- renderPlot({
 
     if( input$rd == "Modeling" & !is.null(input$model) & !input$model == "pick one"){
-      ans2 = fit(data, data_type = 'hourlyRentals', fit_type = input$model)
-      plot(ans2)
-    } else if(1 != 1){
-      return()
-
-      map.biker(obj = ans1, data_type = 'stationStats', 'usage')
 
 
-      map.biker(obj = ans1, data_type = 'stationStats', 'rentals')
+      fitted = if(input$model == "loess" & input$span != 0 ){
+
+        fit(data, data_type = 'hourlyRentals', fit_type = input$model, span = input$span)
+
+      }else if(input$model == "smooth.spline" & input$spar != 0){
+
+        fit(data, data_type = 'hourlyRentals', fit_type = input$model, spar = input$spar)
+
+      } else{
+
+        fit(data, data_type = 'hourlyRentals', fit_type = input$model)
+
+        # output$table <- renderTable({
+        #   data$stationStats %>% filter(Station == input$station) %>%
+        #     rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
+        # })
+
+      }
+      print(summary(fitted$model))
+      plot(fitted)
 
 
 
-    } else{ # nothing
-      return()
-      # x    <- faithful[, 2]  # Old Faithful Geyser data
-      # # bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      # bins <- seq(min(x), max(x))
-      # # draw the histogram with the specified number of bins
-      # hist(x, breaks = bins, col = 'darkgray', border = 'white')
+
+    } else if(input$rd == "Station Stats" & !is.null(input$station) & !input$station == "pick one" ){
+
+      print(input$station)
+      # map.biker(obj = data, data_type = 'stationStats', 'usage')
+
+      # Generate a summary of the dataset
+      output$table <- renderTable({
+        data$stationStats %>% filter(Station == input$station) %>%
+          rename(`Avg Trip Time` = averageTripTime, `Total Trips` = TotalTrips)
+      })
+
+
+
+    } else if(input$rd == "Fun"){
+
+
+
+      map.biker(obj = data, data_type = 'stationStats', 'usage')
 
 
     }
 
 })
-
-
-  #//todo ad summary of models
-  # Generate a summary of the dataset
-  # output$summary <- renderPrint({
-  #   dataset <- datasetInput()
-  #   summary(dataset)
-  # })
-
 
 
   # subdata1 = reactive(biz[which(biz$Sector == input$sector),])

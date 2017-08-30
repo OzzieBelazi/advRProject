@@ -13,13 +13,14 @@ Here is an example of using `biker`:
 
 ```{r, echo=FALSE, results='asis'}
 library(bikesR)
-ans1 = loadBikes(range = '26Jul2017-31Jul2017')
+ans1 = loadBikes(range = '05Jul2017-11Jul2017')
 knitr::kable(head(ans1$hourlyRentals, 10))
 ```
 
 There are several outputs from the load data function, some of which can be fitted using the internal function fit.
 
-You can fit and plot the data using loess, splines, arima
+You can fit and plot the data using loess, splines, arima.
+
 
 ```{r}
 ans2 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline')
@@ -30,6 +31,14 @@ ans4 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'arima')
 plot(ans4)
 ```
 
+loess and smoothing splines function calls allow you to pass in smoothing parameters
+```{r}
+ans2 = fit(ans1, data_type = 'hourlyRentals', fit_type = 'smooth.spline', spar = 0.5)
+# plot(ans2)
+ans3 = fit(ans1, data_type = 'dailyRentals', fit_type = 'loess', span = 5)
+# plot(ans3)
+
+```
 
 Others are used for exploratory data analysis and can also be plotted on spatial visualisations.
 ```{r}
@@ -41,72 +50,34 @@ map.biker(obj = ans1, data_type = 'stationStats', 'rentals')
 
 Included in the package, is a data set called station_locations, which contains all current bike stations and longitude and latitude coordinates.
 ```{r}
-data(station_locations)
-knitr::kable(head(station_locations, 10))
+
+# knitr::kable(head(ans1$station_locations, 10))
 ```
 
 This can be used in conjunction with external spatial packages such as ggmap to assist in ad-hoc data analysis of the biker datasets.
 
 ```{r}
-require(ggmap)
-# wrapper function for ggmap's route which returns the geocoordinates of the route created by the route function.
-getRoute <- function(df, id){
-  cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
-   to = c(as.character(df$EndStationName)), mode = 'bicycling'
-   ,structure = "legs"))
-}
-
-# Lets trace the journey of a single bike over the course of the week
-sample = getRoute(ans1$data, id = 1)
-# get potential routes between each station the bike has visited
-map <- get_map(location = 'London', zoom = 14)
-ggmap(map, base_layer = ggplot(aes(x = endLon, y = endLat),data = sample)) + 
-  geom_leg(data = sample,
-         aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
-         alpha = 3/4, size = 2  ) + 
-  labs(x = 'Longitude', y = 'Latitude') + 
-  ggtitle("Journey of a bike over the course of a week")
+# require(ggmap)
+# # wrapper function for ggmap's route which returns the geocoordinates of the route created by the route function.
+# getRoute <- function(df, id){
+#   cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
+#    to = c(as.character(df$EndStationName)), mode = 'bicycling'
+#    ,structure = "legs"))
+# }
+# 
+# # Lets trace the journey of a single bike over the course of the week
+# sample = getRoute(ans1$data, id = 1)
+# # get potential routes between each station the bike has visited
+# map <- get_map(location = 'London', zoom = 14)
+# ggmap(map, base_layer = ggplot(aes(x = endLon, y = endLat),data = sample)) + 
+#   geom_leg(data = sample,
+#          aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
+#          alpha = 3/4, size = 2  ) + 
+#   labs(x = 'Longitude', y = 'Latitude') + 
+#   ggtitle("Journey of a bike over the course of a week")
 ```
 
 
-The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
-```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
 
 ```{r, echo=FALSE, results='asis'}
 knitr::kable(head(ans1$hourlyRentals, 10))

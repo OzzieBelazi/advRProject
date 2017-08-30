@@ -3,7 +3,7 @@
 #' @param obj Output from the \code{\link{loadBikes}} function
 #' @param data_type Type of data argument, either stationJourneys (\code{stationJourneys}), stationStats (\code{stationStats})
 #' @param plot_type Type of data argument, either usage (\code{usage}), rentals (\code{rentals})
-#'
+#' @param ...
 #' @return Nothing: just a nice plot
 #' @seealso \code{\link{loadBikes}}
 #' @export
@@ -18,12 +18,15 @@
 #' map.biker(obj = ans1, data_type = 'stationStats', 'rentals')
 map.biker = function(obj,
                 data_type = c('stationJourneys',  'stationStats'),
-                plot_type = c('usage', 'rentals')) {
+                plot_type = c('usage', 'rentals'),...) {
+
+  # store all optional arguments in a list
+  z <- list(...)
 
   # Create global variables to avoid annoying CRAN notes
-  pred = NumberOfRentals = BikeId = ..level.. = na.omit = averageTripTime = lon = lat = NULL
+  pred = NumberOfRentals = BikeId = ..level.. = na.omit = averageTripTime = lon = lat = ... = NULL
 
-  # Create a nice spatiol plot from the output of loadBikes
+  # Create a nice spatial plot from the output of loadBikes
 
   # Find out which data set to use
   map_dat = match.arg(data_type)
@@ -43,83 +46,86 @@ map.biker = function(obj,
 
     curr_dat = inner_join(station_locations, curr_dat, by = c("Station"="Station"))
 
+    # ......... need this for stationStats, ...
+    # area = c(left = min(as.numeric(df$endLon)), bottom = min(as.numeric(df$endLat)),
+    #          right = max(as.numeric(df$endLon)), top = max(as.numeric(df$endLat)))
+    # map <- get_map(location = 'London', zoom = 13)
+
+    LondonMap <- ggmap(londonMap,
+                       base_layer = ggplot(aes(x = lon, y = lat),
+                                           data = curr_dat))
+
+    # Format data
+    if(map_arg == 'usage') {
+
+      LondonMap +
+        geom_point(aes(x = lon, y = lat, size = averageTripTime), data = curr_dat, alpha = .4) +
+        scale_size_continuous(name="Usage (mins)", breaks = waiver())
+
+    }
+
+    else if(map_arg == 'rentals') {
+
+
+      # explode data
+      df <- as.data.frame(curr_dat)
+      curr_dat <- df[rep(1:nrow(df), df[,5]),-5]
+
+      LondonMap +
+        stat_density2d(aes(x = lon, y = lat,
+                           fill = ..level.., alpha = ..level..),
+                       bins = 5, geom = "polygon",
+                       data = curr_dat) +
+        scale_fill_gradient(low = "black",
+                            high= "red")
+
+
+    }
+
+
   } else if(map_dat == 'stationJourneys'){ # and routes
-    # # subset the data top  10 ##############################
-    # curr_dat = dat$stationJourneys %>% filter(TotalTrips > 10 & as.character(StartStationName) != as.character(EndStationName)) %>% arrange(desc(TotalTrips) ) %>% head(n=10)
-    # # get coords
-    # curr_dat = inner_join(station_locations, curr_dat, by = c("Station"="StartStationName")) %>%
-    #   rename(startLon = lon, startLat = lat, startStation = Station)
-    # curr_dat = inner_join(station_locations, curr_dat, by = c("Station"="EndStationName")) %>%
-    #   rename(endLon = lon, endLat = lat, endStation = Station)
-    # curr_dat
-    #
-    # route_df <- route(curr_dat$startStation[1], curr_dat$endStation[1], structure = "route")
-    # qmap("London", zoom = 6) +
-    #   geom_path(
-    #     aes(x = lon, y = lat), colour = "red", size = 1.5,
-    #     data = route_df, lineend = "round"
-    #   ) ##############################
-  }
 
-  # ......... need this for stationStats, ...
-  # area = c(left = min(as.numeric(df$endLon)), bottom = min(as.numeric(df$endLat)),
-  #          right = max(as.numeric(df$endLon)), top = max(as.numeric(df$endLat)))
-
-  map <- get_map(location = 'London', zoom = 13)
-  LondonMap <- ggmap(map,
-                     base_layer = ggplot(aes(x = lon, y = lat),
-                                         data = curr_dat))
-
-  # Format data
-  if(map_arg == 'usage') {
-
-    LondonMap +
-      geom_point(aes(x = lon, y = lat, size = averageTripTime), data = curr_dat, alpha = .4) +
-      scale_size_continuous(name="Usage (mins)", breaks = waiver())
+    if(is.null(z$station) ){
+      print("Station not supplied, defaulting to 'Abbey Orchard Street, Westminster'")
+      print("For a full list of stations please type 'View(station_locations)'")
+      station =  "Abbey Orchard Street, Westminster"
+    }
 
 
-  }
-##########   else if(map_arg == 'routes') { ###############
-#
-#     "using getRoute"
-#     LondonMap <- ggmap(map,
-#                        base_layer = ggplot(aes(x = endLon, y = endLat),
-#                                            data = sample))
-#     LondonMap + geom_leg(data = sample,
-#                          aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
-#                          alpha = 3/4, size = 2  ) +
-#       labs(x = 'Longitude', y = 'Latitude')
-#
-#
-# #
-# #
-# #     qmap("London", zoom = 14, maptype = 'hybrid',
-# #          base_layer = ggplot(aes(x = startLon, y = startLat), data = legs_df)) +
-# #       geom_leg(data = legs_df,
-# #                aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
-# #                alpha = 3/4, size = 2  ) +
-# #       labs(x = 'Longitude', y = 'Latitude')
-# #
-#
-#   } #####################
-  else if(map_arg == 'rentals') {
+    curr_dat = curr_dat %>%
+      filter(StartStationName == z$station & as.character(StartStationName) != as.character(EndStationName)) %>%
+      arrange(desc(TotalTrips) ) %>% head(20)
+
+    aList = list()
+    for(i in 1:nrow(curr_dat)){
+      aList[[i]] =
+        cbind(TotalTrips = curr_dat[i,]$TotalTrips, averageTripTime = curr_dat[i,]$averageTripTime, EndStationName = curr_dat[i,]$EndStationName,
+          route(from = c(as.character(curr_dat[i,]$StartStationName)),
+            to = c(as.character(curr_dat[i,]$EndStationName)), mode = 'bicycling'
+            ,structure = "legs")
+        )
+
+    }
+    df = data.frame()
+    for(i in 1:length(aList)){
+      if(is.data.frame(aList[[i]]))
+        df = bind_rows(df, aList[[i]])
+    }
+    df$StartStationName = z$station
 
 
-    # explode data
-    df <- as.data.frame(curr_dat)
-    curr_dat <- df[rep(1:nrow(df), df[,5]),-5]
-
-
-    LondonMap +
-      stat_density2d(aes(x = lon, y = lat,
-                         fill = ..level.., alpha = ..level..),
-                     bins = 5, geom = "polygon",
-                     data = curr_dat) +
-      scale_fill_gradient(low = "black",
-                          high= "red")
+    # # Lets trace the journey of a single bike over the course of the week
+    # sample = getRoute(ans1$data, id = 1)
+    # get potential routes between each station the bike has visited
+    # map <- get_map(location = 'London', zoom = 14)
+    ggmap(londonMap, base_layer = ggplot(aes(x = endLon, y = endLat),data = df)) +
+      geom_leg(data = df,
+               aes(x = startLon, y = startLat, xend = endLon, yend = endLat, colour = EndStationName),
+               alpha = 3/4, size = 2  ) +
+      labs(x = 'Longitude', y = 'Latitude') +
+      ggtitle("Journey of a bike over the course of a week")
 
 
   }
-
 
 }

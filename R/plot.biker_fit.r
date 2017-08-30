@@ -33,23 +33,19 @@ plot.biker_fit = function(x, time_grid = pretty(x$data$x, n = 100), ...) {
   # Create global variables to avoid annoying CRAN notes
   pred = NumberOfRentals = BikeId = na.omit = NULL
 
-  # Create a nice plot from the output of fit.climr
-
   # Get the data set out
   df = x$data
 
+  predict(x$model, newdata = tibble(time_grid))
+  predict(x$model, newdata = tibble(time_grid))
 
   # Get some predicted values based on the time_grid
-  fits = if(x$fit_type == 'somethingelse') {
-    tibble(time_grid, pred = predict(x$model, newdata = tibble(as.numeric(time_grid))))
-  } else if(x$fit_type == 'loess') {
+  fits = if(x$fit_type == 'loess') {
     tibble(time_grid, pred = predict(x$model, newdata = tibble(x = as.numeric(time_grid)))) %>% na.omit()
   } else if(x$fit_type == 'smooth.spline') {
     tibble(time_grid, pred = predict(x$model, tibble(as.numeric(time_grid)))$y[,1])
   } else if(x$fit_type == 'arima') {
     forecast(x$model, h = 20)
-    # tibble(time_grid, pred = predict(x$model, tibble(as.numeric(time_grid))))
-    # tibble(time_grid, pred = predict(x$model,type = "response"))
   }
 
   #todo: @ source
