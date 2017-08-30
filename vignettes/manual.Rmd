@@ -1,12 +1,13 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "bikesR"
+author: "Ozzie Belazi"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::knitr}
 ---
 
 Here is an example of using `biker`:
@@ -48,35 +49,27 @@ map.biker(obj = ans1, data_type = 'stationStats', 'rentals')
 
 ```
 
-Included in the package, is a data set called station_locations, which contains all current bike stations and longitude and latitude coordinates.
 
-<!-- ```{r} -->
-
-<!-- # knitr::kable(head(ans1$station_locations, 10)) -->
-<!-- ``` -->
-
-This can be used in conjunction with external spatial packages such as ggmap to assist in ad-hoc data analysis of the biker datasets.
+You can use the package in conjunction with other spatial packages (ggmap) and view for example the route of a bike.
 
 ```{r}
 require(ggmap)
 # wrapper function for ggmap's route which returns the geocoordinates of the route created by the route function.
 getRoute <- function(df, id){
   cbind(BikeId = id, route(from = c(as.character(df$StartStationName)),
-   to = c(as.character(df$EndStationName)), mode = 'bicycling'
+   to = c(as.character(df$EndStationName))
    ,structure = "legs"))
 }
 
 # Lets trace the journey of a single bike over the course of the week
 sample = getRoute(ans1$data, id = 1)
 # get potential routes between each station the bike has visited
-map <- get_map(location = 'London', zoom = 14)
+map <- get_map(location = 'London', zoom = 12)
 ggmap(map, base_layer = ggplot(aes(x = endLon, y = endLat),data = sample)) +
   geom_leg(data = sample,
          aes(x = startLon, y = startLat, xend = endLon, yend = endLat),
-         alpha = 3/4, size = 5  ) +
+         alpha = 3/4 ) +
   labs(x = 'Longitude', y = 'Latitude') +
   ggtitle("Journey of a bike over the course of a week")
 ```
-
-<!-- devtools::install() -->
 

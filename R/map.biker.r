@@ -46,11 +46,6 @@ map.biker = function(obj,
 
     curr_dat = inner_join(station_locations, curr_dat, by = c("Station"="Station"))
 
-    # ......... need this for stationStats, ...
-    # area = c(left = min(as.numeric(df$endLon)), bottom = min(as.numeric(df$endLat)),
-    #          right = max(as.numeric(df$endLon)), top = max(as.numeric(df$endLat)))
-    # map <- get_map(location = 'London', zoom = 13)
-
     LondonMap <- ggmap(londonMap,
                        base_layer = ggplot(aes(x = lon, y = lat),
                                            data = curr_dat))
@@ -79,7 +74,6 @@ map.biker = function(obj,
         scale_fill_gradient(low = "black",
                             high= "red")
 
-
     }
 
 
@@ -103,7 +97,7 @@ map.biker = function(obj,
       aList[[i]] =
         cbind(TotalTrips = curr_dat[i,]$TotalTrips, averageTripTime = curr_dat[i,]$averageTripTime, EndStationName = curr_dat[i,]$EndStationName,
           route(from = c(as.character(curr_dat[i,]$StartStationName)),
-            to = c(as.character(curr_dat[i,]$EndStationName)), mode = 'bicycling'
+            to = c(as.character(curr_dat[i,]$EndStationName))
             ,structure = "legs")
         )
 
